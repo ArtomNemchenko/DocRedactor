@@ -73,7 +73,8 @@ function ViewDocument() {
   };
 
   const handleViewVersion = (version) => {
-    setSelectedVersion(version);
+    // Toggle: if the version is already selected, hide it; otherwise show it
+    setSelectedVersion(selectedVersion?.id === version.id ? null : version);
   };
 
   const handleRevert = async () => {
