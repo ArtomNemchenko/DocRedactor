@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using DocRedactor.API.Data;
 using DocRedactor.API.DTOs;
-using DocRedactor.API.Models;
+using DocRedactor.API.Interfaces;
 
 namespace DocRedactor.API.Controllers;
 
@@ -13,12 +11,12 @@ namespace DocRedactor.API.Controllers;
 [Route("api/[controller]")]
 public class DocumentsController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IDocumentService _documentService;
     private readonly ILogger<DocumentsController> _logger;
     
-    public DocumentsController(ApplicationDbContext context, ILogger<DocumentsController> logger)
+    public DocumentsController(IDocumentService documentService, ILogger<DocumentsController> logger)
     {
-        _context = context;
+        _documentService = documentService;
         _logger = logger;
     }
     
@@ -34,19 +32,7 @@ public class DocumentsController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var documents = await _context.Documents
-                .Where(d => d.UserId == userId)
-                .OrderByDescending(d => d.CreatedAt)
-                .Select(d => new DocumentResponseDto
-                {
-                    Id = d.Id,
-                    Title = d.Title,
-                    Content = d.Content,
-                    UserId = d.UserId,
-                    CreatedAt = d.CreatedAt
-                })
-                .ToListAsync();
-                
+            var documents = await _documentService.GetAllDocumentsByUserAsync(userId);
             return Ok(documents);
         }
         catch (Exception ex)
@@ -62,17 +48,7 @@ public class DocumentsController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var document = await _context.Documents
-                .Where(d => d.Id == id && d.UserId == userId)
-                .Select(d => new DocumentResponseDto
-                {
-                    Id = d.Id,
-                    Title = d.Title,
-                    Content = d.Content,
-                    UserId = d.UserId,
-                    CreatedAt = d.CreatedAt
-                })
-                .FirstOrDefaultAsync();
+            var document = await _documentService.GetDocumentByIdAsync(id, userId);
                 
             if (document == null)
             {
@@ -94,33 +70,35 @@ public class DocumentsController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var document = new Document
-            {
-                Title = createDto.Title,
-                Content = createDto.Content,
-                UserId = userId
-            };
-            
-            _context.Documents.Add(document);
-            await _context.SaveChangesAsync();
-            
-            _logger.LogInformation("Document {DocumentId} created by user {UserId}", document.Id, userId);
-            
-            var responseDto = new DocumentResponseDto
-            {
-                Id = document.Id,
-                Title = document.Title,
-                Content = document.Content,
-                UserId = document.UserId,
-                CreatedAt = document.CreatedAt
-            };
-            
-            return CreatedAtAction(nameof(GetDocument), new { id = document.Id }, responseDto);
+            var document = await _documentService.CreateDocumentAsync(createDto, userId);
+            return CreatedAtAction(nameof(GetDocument), new { id = document.Id }, document);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating document");
             return StatusCode(500, "An error occurred while creating the document");
+        }
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<DocumentResponseDto>> UpdateDocument(int id, UpdateDocumentDto updateDto)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var document = await _documentService.UpdateDocumentAsync(id, updateDto, userId);
+                
+            if (document == null)
+            {
+                return NotFound();
+            }
+            
+            return Ok(document);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating document {DocumentId}", id);
+            return StatusCode(500, "An error occurred while updating the document");
         }
     }
     
@@ -130,18 +108,12 @@ public class DocumentsController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var document = await _context.Documents
-                .FirstOrDefaultAsync(d => d.Id == id && d.UserId == userId);
+            var result = await _documentService.DeleteDocumentAsync(id, userId);
                 
-            if (document == null)
+            if (!result)
             {
                 return NotFound();
             }
-            
-            _context.Documents.Remove(document);
-            await _context.SaveChangesAsync();
-            
-            _logger.LogInformation("Document {DocumentId} deleted by user {UserId}", id, userId);
             
             return NoContent();
         }
@@ -149,6 +121,45 @@ public class DocumentsController : ControllerBase
         {
             _logger.LogError(ex, "Error deleting document {DocumentId}", id);
             return StatusCode(500, "An error occurred while deleting the document");
+        }
+    }
+
+    [HttpGet("{id}/versions")]
+    public async Task<ActionResult<IEnumerable<DocumentVersionResponseDto>>> GetDocumentVersions(int id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var versions = await _documentService.GetDocumentVersionsAsync(id, userId);
+            return Ok(versions);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving versions for document {DocumentId}", id);
+            return StatusCode(500, "An error occurred while retrieving document versions");
+        }
+    }
+
+    [HttpPost("{id}/revert")]
+    public async Task<ActionResult<DocumentResponseDto>> RevertToVersion(int id, RevertToVersionDto revertDto)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var document = await _documentService.RevertToVersionAsync(id, revertDto, userId);
+                
+            if (document == null)
+            {
+                return NotFound();
+            }
+            
+            return Ok(document);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reverting document {DocumentId} to version {VersionNumber}", 
+                id, revertDto.VersionNumber);
+            return StatusCode(500, "An error occurred while reverting the document");
         }
     }
 }

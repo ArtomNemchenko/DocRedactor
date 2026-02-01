@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:5180/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -63,29 +63,23 @@ export const documentService = {
     return response.data;
   },
 
+  update: async (id, content, changeDescription) => {
+    const response = await api.put(`/documents/${id}`, { content, changeDescription });
+    return response.data;
+  },
+
   delete: async (id) => {
     await api.delete(`/documents/${id}`);
   },
-};
 
-export const redactionService = {
-  getByDocument: async (documentId) => {
-    const response = await api.get(`/redactions/document/${documentId}`);
+  getVersions: async (id) => {
+    const response = await api.get(`/documents/${id}/versions`);
     return response.data;
   },
 
-  create: async (documentId, startPosition, endPosition, reason) => {
-    const response = await api.post('/redactions', {
-      documentId,
-      startPosition,
-      endPosition,
-      reason,
-    });
+  revertToVersion: async (id, versionNumber, changeDescription) => {
+    const response = await api.post(`/documents/${id}/revert`, { versionNumber, changeDescription });
     return response.data;
-  },
-
-  delete: async (id) => {
-    await api.delete(`/redactions/${id}`);
   },
 };
 

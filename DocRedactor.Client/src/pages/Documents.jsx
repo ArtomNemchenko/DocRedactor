@@ -86,7 +86,7 @@ function Documents() {
                   {doc.content.length > 150 ? '...' : ''}
                 </p>
                 <p className="document-date">
-                  Created: {new Date(doc.createdAt).toLocaleDateString()}
+                  Created: {new Date(doc.createdAt).toLocaleDateString()} | Version: {doc.currentVersion}
                 </p>
                 <div className="document-actions">
                   <button

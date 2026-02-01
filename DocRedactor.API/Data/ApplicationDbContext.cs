@@ -12,7 +12,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
     
     public DbSet<Document> Documents => Set<Document>();
-    public DbSet<Redaction> Redactions => Set<Redaction>();
+    public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
     
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -23,8 +23,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.CurrentVersion).IsRequired().HasDefaultValue(1);
             entity.Property(e => e.UserId).IsRequired();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
             
             entity.HasOne(d => d.User)
                 .WithMany(u => u.Documents)
@@ -33,26 +35,30 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => e.UpdatedAt);
         });
         
-        builder.Entity<Redaction>(entity =>
+        builder.Entity<DocumentVersion>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.VersionNumber).IsRequired();
             entity.Property(e => e.UserId).IsRequired();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
             
-            entity.HasOne(r => r.Document)
-                .WithMany(d => d.Redactions)
-                .HasForeignKey(r => r.DocumentId)
+            entity.HasOne(v => v.Document)
+                .WithMany(d => d.Versions)
+                .HasForeignKey(v => v.DocumentId)
                 .OnDelete(DeleteBehavior.Cascade);
                 
-            entity.HasOne(r => r.User)
-                .WithMany(u => u.Redactions)
-                .HasForeignKey(r => r.UserId)
+            entity.HasOne(v => v.User)
+                .WithMany(u => u.DocumentVersions)
+                .HasForeignKey(v => v.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
                 
             entity.HasIndex(e => e.DocumentId);
             entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.DocumentId, e.VersionNumber }).IsUnique();
         });
     }
 }

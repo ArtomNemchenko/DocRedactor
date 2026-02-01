@@ -1,29 +1,32 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { documentService, redactionService } from '../services/api';
+import { documentService } from '../services/api';
 import './ViewDocument.css';
 
 function ViewDocument() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [document, setDocument] = useState(null);
-  const [redactions, setRedactions] = useState([]);
+  const [versions, setVersions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedText, setSelectedText] = useState({ start: -1, end: -1 });
-  const [reason, setReason] = useState('');
-  const [showRedactionForm, setShowRedactionForm] = useState(false);
-  const contentRef = useRef(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editedContent, setEditedContent] = useState('');
+  const [changeDescription, setChangeDescription] = useState('');
+  const [selectedVersion, setSelectedVersion] = useState(null);
+  const [showRevertModal, setShowRevertModal] = useState(false);
+  const [revertDescription, setRevertDescription] = useState('');
 
   useEffect(() => {
     loadDocument();
-    loadRedactions();
+    loadVersions();
   }, [id]);
 
   const loadDocument = async () => {
     try {
       const data = await documentService.getById(id);
       setDocument(data);
+      setEditedContent(data.content);
     } catch (err) {
       setError('Failed to load document');
       console.error(err);
@@ -32,86 +35,66 @@ function ViewDocument() {
     }
   };
 
-  const loadRedactions = async () => {
+  const loadVersions = async () => {
     try {
-      const data = await redactionService.getByDocument(id);
-      setRedactions(data);
+      const data = await documentService.getVersions(id);
+      setVersions(data);
     } catch (err) {
-      console.error('Failed to load redactions', err);
+      console.error('Failed to load versions', err);
     }
   };
 
-  const handleTextSelection = () => {
-    const selection = window.getSelection();
-    const text = selection.toString();
-    
-    if (text.length > 0 && document && contentRef.current) {
-      const range = selection.getRangeAt(0);
-      const preSelectionRange = range.cloneRange();
-      preSelectionRange.selectNodeContents(contentRef.current);
-      preSelectionRange.setEnd(range.startContainer, range.startOffset);
-      const start = preSelectionRange.toString().length;
-      const end = start + text.length;
-      
-      setSelectedText({ start, end });
-      setShowRedactionForm(true);
-    }
-  };
-
-  const handleCreateRedaction = async (e) => {
-    e.preventDefault();
-    
-    if (selectedText.start === -1 || selectedText.end === -1) {
-      alert('Please select text to redact');
+  const handleUpdate = async () => {
+    if (editedContent === document.content) {
+      setEditMode(false);
       return;
     }
 
     try {
-      const newRedaction = await redactionService.create(
+      const updatedDoc = await documentService.update(
         parseInt(id),
-        selectedText.start,
-        selectedText.end,
-        reason
+        editedContent,
+        changeDescription || 'Updated content'
       );
-      setRedactions([...redactions, newRedaction]);
-      setReason('');
-      setSelectedText({ start: -1, end: -1 });
-      setShowRedactionForm(false);
-      window.getSelection().removeAllRanges();
+      setDocument(updatedDoc);
+      setEditMode(false);
+      setChangeDescription('');
+      loadVersions();
     } catch (err) {
-      alert('Failed to create redaction');
+      alert('Failed to update document');
       console.error(err);
     }
   };
 
-  const handleDeleteRedaction = async (redactionId) => {
-    if (!window.confirm('Are you sure you want to remove this redaction?')) {
-      return;
-    }
+  const handleCancelEdit = () => {
+    setEditedContent(document.content);
+    setChangeDescription('');
+    setEditMode(false);
+  };
+
+  const handleViewVersion = (version) => {
+    setSelectedVersion(version);
+  };
+
+  const handleRevert = async () => {
+    if (!selectedVersion) return;
 
     try {
-      await redactionService.delete(redactionId);
-      setRedactions(redactions.filter((r) => r.id !== redactionId));
+      const updatedDoc = await documentService.revertToVersion(
+        parseInt(id),
+        selectedVersion.versionNumber,
+        revertDescription || `Reverted to version ${selectedVersion.versionNumber}`
+      );
+      setDocument(updatedDoc);
+      setEditedContent(updatedDoc.content);
+      setSelectedVersion(null);
+      setShowRevertModal(false);
+      setRevertDescription('');
+      loadVersions();
     } catch (err) {
-      alert('Failed to delete redaction');
+      alert('Failed to revert to version');
       console.error(err);
     }
-  };
-
-  const getRedactedContent = () => {
-    if (!document) return '';
-    
-    let content = document.content;
-    const sortedRedactions = [...redactions].sort((a, b) => b.startPosition - a.startPosition);
-    
-    sortedRedactions.forEach((redaction) => {
-      const before = content.substring(0, redaction.startPosition);
-      const redacted = '█'.repeat(redaction.endPosition - redaction.startPosition);
-      const after = content.substring(redaction.endPosition);
-      content = before + redacted + after;
-    });
-    
-    return content;
   };
 
   if (loading) {
@@ -135,106 +118,145 @@ function ViewDocument() {
       <div className="view-document-container">
         <div className="document-header">
           <h1>{document.title}</h1>
-          <button onClick={() => navigate('/documents')} className="btn-back">
-            Back to Documents
-          </button>
+          <div className="header-actions">
+            <button onClick={() => navigate('/documents')} className="btn-back">
+              Back to Documents
+            </button>
+            {!editMode && (
+              <button onClick={() => setEditMode(true)} className="btn-edit">
+                Edit Document
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="document-info">
           <p>Created: {new Date(document.createdAt).toLocaleString()}</p>
-          <p>Redactions: {redactions.length}</p>
+          <p>Last Updated: {new Date(document.updatedAt).toLocaleString()}</p>
+          <p>Current Version: {document.currentVersion}</p>
+          <p>Total Versions: {versions.length}</p>
         </div>
 
         <div className="document-section">
-          <h3>Original Content</h3>
-          <div
-            ref={contentRef}
-            className="document-content"
-            onMouseUp={handleTextSelection}
-          >
-            {document.content}
-          </div>
-        </div>
-
-        <div className="document-section">
-          <h3>Redacted Content</h3>
-          <div className="document-content redacted">
-            {getRedactedContent()}
-          </div>
-        </div>
-
-        {showRedactionForm && (
-          <div className="redaction-form">
-            <h3>Create Redaction</h3>
-            <p>
-              Selected text: positions {selectedText.start} to {selectedText.end}
-            </p>
-            <form onSubmit={handleCreateRedaction}>
+          <h3>Current Content</h3>
+          {editMode ? (
+            <div className="edit-form">
+              <textarea
+                className="edit-textarea"
+                value={editedContent}
+                onChange={(e) => setEditedContent(e.target.value)}
+                rows={15}
+              />
               <div className="form-group">
-                <label htmlFor="reason">Reason (optional)</label>
+                <label htmlFor="changeDescription">Change Description</label>
                 <input
                   type="text"
-                  id="reason"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Enter reason for redaction"
+                  id="changeDescription"
+                  value={changeDescription}
+                  onChange={(e) => setChangeDescription(e.target.value)}
+                  placeholder="Describe your changes..."
                   maxLength={500}
                 />
               </div>
               <div className="form-actions">
-                <button type="submit" className="btn-submit">
-                  Create Redaction
+                <button onClick={handleUpdate} className="btn-submit">
+                  Save Changes
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowRedactionForm(false);
-                    setReason('');
-                    setSelectedText({ start: -1, end: -1 });
-                  }}
-                  className="btn-cancel"
-                >
+                <button onClick={handleCancelEdit} className="btn-cancel">
                   Cancel
                 </button>
               </div>
-            </form>
-          </div>
-        )}
-
-        <div className="redactions-section">
-          <h3>Redactions ({redactions.length})</h3>
-          {redactions.length === 0 ? (
-            <p className="no-redactions">
-              No redactions yet. Select text in the original content to create one.
-            </p>
+            </div>
           ) : (
-            <div className="redactions-list">
-              {redactions.map((redaction) => (
-                <div key={redaction.id} className="redaction-item">
-                  <div className="redaction-info">
-                    <p>
-                      <strong>Position:</strong> {redaction.startPosition} - {redaction.endPosition}
-                    </p>
-                    {redaction.reason && (
-                      <p>
-                        <strong>Reason:</strong> {redaction.reason}
-                      </p>
-                    )}
-                    <p className="redaction-date">
-                      Created: {new Date(redaction.createdAt).toLocaleString()}
-                    </p>
+            <div className="document-content">
+              {document.content}
+            </div>
+          )}
+        </div>
+
+        <div className="versions-section">
+          <h3>Version History</h3>
+          {versions.length === 0 ? (
+            <p className="no-versions">No version history available.</p>
+          ) : (
+            <div className="versions-list">
+              {versions.map((version) => (
+                <div key={version.id} className="version-item">
+                  <div className="version-header">
+                    <span className="version-number">
+                      Version {version.versionNumber}
+                      {version.versionNumber === document.currentVersion && (
+                        <span className="current-badge">CURRENT</span>
+                      )}
+                    </span>
+                    <span className="version-date">
+                      {new Date(version.createdAt).toLocaleString()}
+                    </span>
                   </div>
-                  <button
-                    onClick={() => handleDeleteRedaction(redaction.id)}
-                    className="btn-delete-small"
-                  >
-                    Remove
-                  </button>
+                  <p className="version-description">
+                    {version.changeDescription || 'No description'}
+                  </p>
+                  <div className="version-actions">
+                    <button
+                      onClick={() => handleViewVersion(version)}
+                      className="btn-view-version"
+                    >
+                      {selectedVersion?.id === version.id ? 'Hide' : 'View'}
+                    </button>
+                    {version.versionNumber !== document.currentVersion && (
+                      <button
+                        onClick={() => {
+                          setSelectedVersion(version);
+                          setShowRevertModal(true);
+                        }}
+                        className="btn-revert"
+                      >
+                        Revert to This Version
+                      </button>
+                    )}
+                  </div>
+                  {selectedVersion?.id === version.id && (
+                    <div className="version-content">
+                      <h4>Content at Version {version.versionNumber}:</h4>
+                      <pre className="version-text">{version.content}</pre>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        {showRevertModal && (
+          <div className="modal-overlay" onClick={() => setShowRevertModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <h3>Revert to Version {selectedVersion?.versionNumber}</h3>
+              <p>
+                This will create a new version (v{document.currentVersion + 1}) with the content
+                from version {selectedVersion?.versionNumber}.
+              </p>
+              <div className="form-group">
+                <label htmlFor="revertDescription">Change Description (Optional)</label>
+                <input
+                  type="text"
+                  id="revertDescription"
+                  value={revertDescription}
+                  onChange={(e) => setRevertDescription(e.target.value)}
+                  placeholder="Reason for reverting..."
+                  maxLength={500}
+                />
+              </div>
+              <div className="modal-actions">
+                <button onClick={handleRevert} className="btn-confirm">
+                  Confirm Revert
+                </button>
+                <button onClick={() => setShowRevertModal(false)} className="btn-cancel">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

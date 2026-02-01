@@ -14,11 +14,16 @@ public class Document
     public string Content { get; set; } = string.Empty;
     
     [Required]
+    public int CurrentVersion { get; set; } = 1;
+    
+    [Required]
     public string UserId { get; set; } = string.Empty;
     
     public ApplicationUser? User { get; set; }
     
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     
-    public ICollection<Redaction> Redactions { get; set; } = new List<Redaction>();
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    
+    public ICollection<DocumentVersion> Versions { get; set; } = new List<DocumentVersion>();
 }

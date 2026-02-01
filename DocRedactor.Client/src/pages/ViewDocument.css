@@ -25,19 +25,35 @@
   color: #333;
 }
 
-.btn-back {
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-back, .btn-edit {
   padding: 10px 20px;
-  background: #666;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s;
+  transition: transform 0.2s;
+}
+
+.btn-back {
+  background: #666;
 }
 
 .btn-back:hover {
   background: #444;
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-edit:hover {
+  transform: translateY(-2px);
 }
 
 .document-info {
@@ -48,6 +64,7 @@
   margin-bottom: 20px;
   display: flex;
   gap: 30px;
+  flex-wrap: wrap;
 }
 
 .document-info p {
@@ -77,88 +94,142 @@
   word-wrap: break-word;
   line-height: 1.6;
   font-family: 'Courier New', monospace;
-  user-select: text;
-  cursor: text;
 }
 
-.document-content.redacted {
-  background: #fff5f5;
-  border-color: #fcc;
-  user-select: none;
-  cursor: default;
+.edit-textarea {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 300px;
+  box-sizing: border-box;
 }
 
-.redaction-form {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-  border: 2px solid #667eea;
-}
-
-.redaction-form h3 {
-  margin-top: 0;
-  color: #667eea;
-}
-
-.redactions-section {
+.versions-section {
   background: white;
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.redactions-section h3 {
+.versions-section h3 {
   margin-top: 0;
   color: #333;
 }
 
-.no-redactions {
+.no-versions {
   color: #999;
   font-style: italic;
 }
 
-.redactions-list {
+.versions-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.redaction-item {
+.version-item {
   background: #f9f9f9;
-  padding: 15px;
+  padding: 20px;
   border-radius: 5px;
   border: 1px solid #ddd;
+}
+
+.version-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 10px;
 }
 
-.redaction-info p {
-  margin: 5px 0;
+.version-number {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+}
+
+.current-badge {
+  margin-left: 10px;
+  padding: 4px 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.version-date {
+  color: #999;
+  font-size: 13px;
+}
+
+.version-description {
   color: #666;
+  margin: 10px 0;
 }
 
-.redaction-date {
-  font-size: 12px;
-  color: #999 !important;
+.version-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
 }
 
-.btn-delete-small {
+.btn-view-version {
   padding: 6px 12px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
   transition: transform 0.2s;
 }
 
-.btn-delete-small:hover {
+.btn-revert {
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: transform 0.2s;
+}
+
+.btn-view-version:hover,
+.btn-revert:hover {
   transform: translateY(-2px);
+}
+
+.version-content {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 2px solid #ddd;
+}
+
+.version-content h4 {
+  margin-top: 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.version-text {
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.6;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .form-group {
@@ -190,9 +261,10 @@
 .form-actions {
   display: flex;
   gap: 10px;
+  margin-top: 20px;
 }
 
-.btn-submit {
+.btn-submit, .btn-confirm {
   padding: 10px 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -203,7 +275,7 @@
   transition: transform 0.2s;
 }
 
-.btn-submit:hover {
+.btn-submit:hover, .btn-confirm:hover {
   transform: translateY(-2px);
 }
 
@@ -220,6 +292,44 @@
 
 .btn-cancel:hover {
   background: #f5f5f5;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.modal-content p {
+  color: #666;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .loading,

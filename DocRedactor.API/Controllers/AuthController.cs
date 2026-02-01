@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using DocRedactor.API.DTOs;
+using DocRedactor.API.Interfaces;
 using DocRedactor.API.Models;
 
 namespace DocRedactor.API.Controllers;
@@ -15,18 +12,18 @@ public class AuthController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly IConfiguration _configuration;
+    private readonly IJwtTokenService _jwtTokenService;
     private readonly ILogger<AuthController> _logger;
     
     public AuthController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IConfiguration configuration,
+        IJwtTokenService jwtTokenService,
         ILogger<AuthController> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
-        _configuration = configuration;
+        _jwtTokenService = jwtTokenService;
         _logger = logger;
     }
     
@@ -50,7 +47,7 @@ public class AuthController : ControllerBase
             
             _logger.LogInformation("User {Email} registered successfully", registerDto.Email);
             
-            var token = GenerateJwtToken(user);
+            var token = _jwtTokenService.GenerateToken(user);
             
             return Ok(new AuthResponseDto
             {
@@ -87,7 +84,7 @@ public class AuthController : ControllerBase
             
             _logger.LogInformation("User {Email} logged in successfully", loginDto.Email);
             
-            var token = GenerateJwtToken(user);
+            var token = _jwtTokenService.GenerateToken(user);
             
             return Ok(new AuthResponseDto
             {
@@ -101,31 +98,5 @@ public class AuthController : ControllerBase
             _logger.LogError(ex, "Error during user login");
             return StatusCode(500, "An error occurred during login");
         }
-    }
-    
-    private string GenerateJwtToken(ApplicationUser user)
-    {
-        var securityKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-        
-        var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Name, user.UserName!)
-        };
-        
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(24),
-            signingCredentials: credentials
-        );
-        
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

@@ -1,33 +1,30 @@
 # DocRedactor
 
-A full-stack document redaction application built with ASP.NET Core Web API and React.
+A full-stack document versioning and management application built with ASP.NET Core Web API and React.
 
-## Demo Screenshots
+## Test Credentials
 
-<table>
-  <tr>
-    <td><img src="https://github.com/user-attachments/assets/73a54551-f97c-4bfe-9f09-0c21d02342ec" alt="Login" width="400"/><br/><b>Login Page</b></td>
-    <td><img src="https://github.com/user-attachments/assets/4b421398-2b34-41ef-aba9-4bfa3baca57f" alt="Register" width="400"/><br/><b>Registration</b></td>
-  </tr>
-  <tr>
-    <td><img src="https://github.com/user-attachments/assets/d094f003-3844-4dbf-8d71-53d0fd338846" alt="Dashboard" width="400"/><br/><b>Dashboard</b></td>
-    <td><img src="https://github.com/user-attachments/assets/943030ab-e0ac-47da-a096-384a2a6b1829" alt="Create" width="400"/><br/><b>Create Document</b></td>
-  </tr>
-  <tr>
-    <td><img src="https://github.com/user-attachments/assets/6512ff8b-4a2d-4ce8-b424-700024426a85" alt="List" width="400"/><br/><b>Documents List</b></td>
-    <td><img src="https://github.com/user-attachments/assets/bfd27914-09a5-493e-a615-4543479af8a9" alt="View" width="400"/><br/><b>Document View</b></td>
-  </tr>
-</table>
+The application comes pre-seeded with test users and documents:
+
+| Email | Username | Password |
+|-------|----------|----------|
+| alice@example.com | alice | Alice123 |
+| bob@example.com | bob | Bob123 |
+
+- **Alice** has 2 test documents: "Meeting Notes" and "Project Proposal"
+- **Bob** has 1 test document: "Technical Specification"
 
 ## Features
 
 - **User Authentication**: Secure registration and login using JWT tokens
-- **Document Management**: Create, view, and delete documents
-- **Document Redaction**: Apply redactions to sensitive content with position tracking
-- **Per-User Authorization**: Users can only access their own documents and redactions
+- **Document Management**: Create, view, edit, and delete documents
+- **Document Versioning**: Track all changes with full version history
+- **Version Control**: Edit documents to create new versions, view any previous version, and revert to any version (creates a new version at HEAD)
+- **Per-User Authorization**: Users can only access their own documents and versions
 - **Audit Logging**: All operations are logged for security and compliance
-- **Immutable Documents**: Document content is preserved for auditability
+- **Change Descriptions**: Add descriptions when updating or reverting documents
 - **Modern UI**: Responsive React frontend with beautiful gradients
+- **Clean Architecture**: Service layer, repository pattern, and dependency injection
 
 ## Architecture
 
@@ -36,11 +33,16 @@ A full-stack document redaction application built with ASP.NET Core Web API and 
 - **Framework**: .NET 9.0
 - **Database**: SQLite with Entity Framework Core
 - **Authentication**: ASP.NET Identity with JWT Bearer tokens
-- **Security**: Password hashing, token-based auth, per-user data isolation
+- **Architecture Pattern**: 
+  - Controllers → Services → Repositories
+  - Dependency Injection for all services
+  - Separated JWT token generation service
 - **API Structure**:
-  - `AuthController`: User registration and login
-  - `DocumentsController`: CRUD operations for documents
-  - `RedactionsController`: CRUD operations for redactions
+  - `AuthController`: User registration and login (uses IJwtTokenService)
+  - `DocumentsController`: CRUD operations and version management (uses IDocumentService)
+  - `IDocumentService`: Business logic for document operations
+  - `IDocumentRepository`: Data access for documents
+  - `IDocumentVersionRepository`: Data access for document versions
 
 ### Frontend (React)
 
@@ -74,7 +76,7 @@ dotnet restore
 dotnet run
 ```
 
-The API will start at `http://localhost:5000`
+The API will start at `http://localhost:5180`
 
 ### Frontend Setup
 
@@ -97,26 +99,38 @@ The frontend will start at `http://localhost:5173`
 
 ## Usage
 
-### 1. Register a New Account
-- Navigate to the registration page
-- Enter email, username, and password (minimum 6 characters)
+### 1. Login with Test Account
+- Use one of the test credentials (alice@example.com / Alice123 or bob@example.com / Bob123)
+- Or register a new account with email, username, and password (minimum 6 characters)
 - Password must contain uppercase, lowercase, and digit
 
 ### 2. Create a Document
 - After logging in, click "Create New Document"
 - Enter a title and content
-- Click "Create Document"
+- Click "Create Document" - this creates version 1
 
-### 3. Apply Redactions
+### 3. Edit a Document (Create New Version)
 - Open a document
-- Select text in the "Original Content" section
-- Enter an optional reason for the redaction
-- Click "Create Redaction"
-- View the redacted content in the "Redacted Content" section
+- Click "Edit Document"
+- Modify the content as needed
+- Add an optional change description
+- Click "Save Changes" - this creates a new version
 
-### 4. Manage Documents and Redactions
+### 4. View Version History
+- Scroll down to the "Version History" section
+- See all versions with version numbers, timestamps, and descriptions
+- Click "View" on any version to see its content
+- The current version is marked with a "CURRENT" badge
+
+### 5. Revert to a Previous Version
+- In the version history, click "Revert to This Version" on any past version
+- Add an optional description for why you're reverting
+- Click "Confirm Revert" - this creates a new version at HEAD with the old content
+
+### 6. Manage Documents
 - View all your documents on the main page
-- Delete documents or individual redactions as needed
+- Each document shows its current version number
+- Delete documents as needed
 - All changes are tracked and logged
 
 ## API Endpoints
@@ -128,23 +142,22 @@ The frontend will start at `http://localhost:5173`
 ### Documents
 - `GET /api/documents` - Get all documents for current user
 - `GET /api/documents/{id}` - Get specific document
-- `POST /api/documents` - Create new document
+- `POST /api/documents` - Create new document (creates v1)
+- `PUT /api/documents/{id}` - Update document (creates new version)
 - `DELETE /api/documents/{id}` - Delete document
-
-### Redactions
-- `GET /api/redactions/document/{documentId}` - Get redactions for a document
-- `POST /api/redactions` - Create new redaction
-- `DELETE /api/redactions/{id}` - Delete redaction
+- `GET /api/documents/{id}/versions` - Get all versions of a document
+- `POST /api/documents/{id}/revert` - Revert to a specific version (creates new version at HEAD)
 
 ## Security Features
 
-1. **JWT Authentication**: Stateless token-based authentication
+1. **JWT Authentication**: Stateless token-based authentication with separate service
 2. **Password Requirements**: Strong password policy enforced
 3. **Per-User Authorization**: Users can only access their own data
 4. **Audit Logging**: All operations logged with user ID and timestamp
 5. **Input Validation**: Request validation on both client and server
 6. **CORS Configuration**: Restricted to known frontend origins
-7. **Immutable Content**: Documents cannot be modified after creation
+7. **Version Tracking**: Complete audit trail of all document changes
+8. **Clean Architecture**: Separation of concerns with repository and service patterns
 
 **Important Security Note**: For production deployments, the JWT secret key in `appsettings.json` should be moved to environment variables or a secure secret management system like Azure Key Vault, AWS Secrets Manager, or user secrets for development.
 
@@ -156,16 +169,20 @@ The frontend will start at `http://localhost:5173`
 ### Documents
 - `Id`: Primary key
 - `Title`: Document title (max 200 chars)
-- `Content`: Document text content (immutable)
+- `Content`: Current document content
+- `CurrentVersion`: Current version number
 - `UserId`: Foreign key to user
-- `CreatedAt`: Timestamp
+- `CreatedAt`: Original creation timestamp
+- `UpdatedAt`: Last update timestamp
 
-### Redactions
+### DocumentVersions
 - `Id`: Primary key
 - `DocumentId`: Foreign key to document
-- `UserId`: Foreign key to user
-- `StartPosition`: Start index of redacted text
-- `EndPosition`: End index of redacted text
+- `Content`: Content at this version
+- `VersionNumber`: Sequential version number
+- `ChangeDescription`: Description of what changed
+- `UserId`: Foreign key to user who made the change
+- `CreatedAt`: When this version was created
 - `Reason`: Optional explanation (max 500 chars)
 - `CreatedAt`: Timestamp
 
