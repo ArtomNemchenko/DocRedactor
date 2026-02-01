@@ -24,7 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Content).IsRequired();
             entity.Property(e => e.UserId).IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
             
             entity.HasOne(d => d.User)
                 .WithMany(u => u.Documents)
@@ -39,7 +39,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.UserId).IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
             
             entity.HasOne(r => r.Document)
                 .WithMany(d => d.Redactions)
