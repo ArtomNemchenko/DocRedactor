@@ -2,6 +2,23 @@
 
 A full-stack document redaction application built with ASP.NET Core Web API and React.
 
+## Demo Screenshots
+
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/73a54551-f97c-4bfe-9f09-0c21d02342ec" alt="Login" width="400"/><br/><b>Login Page</b></td>
+    <td><img src="https://github.com/user-attachments/assets/4b421398-2b34-41ef-aba9-4bfa3baca57f" alt="Register" width="400"/><br/><b>Registration</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/d094f003-3844-4dbf-8d71-53d0fd338846" alt="Dashboard" width="400"/><br/><b>Dashboard</b></td>
+    <td><img src="https://github.com/user-attachments/assets/943030ab-e0ac-47da-a096-384a2a6b1829" alt="Create" width="400"/><br/><b>Create Document</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/6512ff8b-4a2d-4ce8-b424-700024426a85" alt="List" width="400"/><br/><b>Documents List</b></td>
+    <td><img src="https://github.com/user-attachments/assets/bfd27914-09a5-493e-a615-4543479af8a9" alt="View" width="400"/><br/><b>Document View</b></td>
+  </tr>
+</table>
+
 ## Features
 
 - **User Authentication**: Secure registration and login using JWT tokens
