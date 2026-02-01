@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { documentService, redactionService } from '../services/api';
 import './ViewDocument.css';
@@ -13,6 +13,7 @@ function ViewDocument() {
   const [selectedText, setSelectedText] = useState({ start: -1, end: -1 });
   const [reason, setReason] = useState('');
   const [showRedactionForm, setShowRedactionForm] = useState(false);
+  const contentRef = useRef(null);
 
   useEffect(() => {
     loadDocument();
@@ -44,10 +45,10 @@ function ViewDocument() {
     const selection = window.getSelection();
     const text = selection.toString();
     
-    if (text.length > 0 && document) {
+    if (text.length > 0 && document && contentRef.current) {
       const range = selection.getRangeAt(0);
       const preSelectionRange = range.cloneRange();
-      preSelectionRange.selectNodeContents(document.getElementById('document-content'));
+      preSelectionRange.selectNodeContents(contentRef.current);
       preSelectionRange.setEnd(range.startContainer, range.startOffset);
       const start = preSelectionRange.toString().length;
       const end = start + text.length;
@@ -147,7 +148,7 @@ function ViewDocument() {
         <div className="document-section">
           <h3>Original Content</h3>
           <div
-            id="document-content"
+            ref={contentRef}
             className="document-content"
             onMouseUp={handleTextSelection}
           >

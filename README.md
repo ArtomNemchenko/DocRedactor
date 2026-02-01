@@ -17,7 +17,7 @@ A full-stack document redaction application built with ASP.NET Core Web API and 
 ### Backend (ASP.NET Core Web API)
 
 - **Framework**: .NET 9.0
-- **Database**: SQL Server LocalDB with Entity Framework Core
+- **Database**: SQLite with Entity Framework Core
 - **Authentication**: ASP.NET Identity with JWT Bearer tokens
 - **Security**: Password hashing, token-based auth, per-user data isolation
 - **API Structure**:
@@ -39,7 +39,6 @@ A full-stack document redaction application built with ASP.NET Core Web API and 
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js 20+](https://nodejs.org/)
-- SQL Server LocalDB (included with Visual Studio)
 
 ### Backend Setup
 
@@ -130,6 +129,8 @@ The frontend will start at `http://localhost:5173`
 6. **CORS Configuration**: Restricted to known frontend origins
 7. **Immutable Content**: Documents cannot be modified after creation
 
+**Important Security Note**: For production deployments, the JWT secret key in `appsettings.json` should be moved to environment variables or a secure secret management system like Azure Key Vault, AWS Secrets Manager, or user secrets for development.
+
 ## Database Schema
 
 ### Users (AspNetUsers)
@@ -186,7 +187,7 @@ npm run build
 - Entity Framework Core 9.0
 - ASP.NET Identity
 - JWT Bearer Authentication
-- SQL Server
+- SQLite
 
 ### Frontend
 - React 18
