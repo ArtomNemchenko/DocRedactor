@@ -162,4 +162,26 @@ public class DocumentsController : ControllerBase
             return StatusCode(500, "An error occurred while reverting the document");
         }
     }
+
+    [HttpPut("{id}/versions/{versionId}/rate")]
+    public async Task<ActionResult<DocumentVersionResponseDto>> RateVersion(int id, int versionId, RateVersionDto rateDto)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var version = await _documentService.RateVersionAsync(id, versionId, rateDto, userId);
+                
+            if (version == null)
+            {
+                return NotFound();
+            }
+            
+            return Ok(version);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error rating version {VersionId} of document {DocumentId}", versionId, id);
+            return StatusCode(500, "An error occurred while rating the version");
+        }
+    }
 }

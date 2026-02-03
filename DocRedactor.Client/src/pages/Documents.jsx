@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { documentService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import StarRating from '../components/StarRating';
 import './Documents.css';
 
 function Documents() {
@@ -85,9 +86,16 @@ function Documents() {
                   {doc.content.substring(0, 150)}
                   {doc.content.length > 150 ? '...' : ''}
                 </p>
-                <p className="document-date">
-                  Created: {new Date(doc.createdAt).toLocaleDateString()} | Version: {doc.currentVersion}
-                </p>
+                <div className="document-meta">
+                  <p className="document-date">
+                    Created: {new Date(doc.createdAt).toLocaleDateString()} | Version: {doc.currentVersion}
+                  </p>
+                  {doc.currentVersionRating && (
+                    <div className="document-rating">
+                      <StarRating rating={doc.currentVersionRating} readOnly size="small" />
+                    </div>
+                  )}
+                </div>
                 <div className="document-actions">
                   <button
                     onClick={() => navigate(`/documents/${doc.id}`)}

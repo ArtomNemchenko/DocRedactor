@@ -171,6 +171,22 @@
   margin: 10px 0;
 }
 
+.version-rating-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 15px 0;
+  padding: 10px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.version-rating-section label {
+  font-weight: 500;
+  color: #666;
+  font-size: 14px;
+}
+
 .version-actions {
   display: flex;
   gap: 10px;

@@ -8,5 +8,6 @@ public interface IDocumentVersionRepository
     Task<DocumentVersion?> GetVersionByIdAsync(int id);
     Task<DocumentVersion?> GetVersionByDocumentAndVersionNumberAsync(int documentId, int versionNumber);
     Task<DocumentVersion> CreateAsync(DocumentVersion version);
+    Task UpdateAsync(DocumentVersion version);
     Task<int> GetNextVersionNumberAsync(int documentId);
 }

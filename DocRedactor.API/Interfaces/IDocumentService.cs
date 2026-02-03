@@ -12,4 +12,5 @@ public interface IDocumentService
     Task<bool> DeleteDocumentAsync(int id, string userId);
     Task<IEnumerable<DocumentVersionResponseDto>> GetDocumentVersionsAsync(int documentId, string userId);
     Task<DocumentResponseDto?> RevertToVersionAsync(int documentId, RevertToVersionDto revertDto, string userId);
+    Task<DocumentVersionResponseDto?> RateVersionAsync(int documentId, int versionId, RateVersionDto rateDto, string userId);
 }

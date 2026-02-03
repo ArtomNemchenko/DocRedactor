@@ -41,6 +41,12 @@ public class DocumentVersionRepository : IDocumentVersionRepository
         return version;
     }
 
+    public async Task UpdateAsync(DocumentVersion version)
+    {
+        _context.DocumentVersions.Update(version);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<int> GetNextVersionNumberAsync(int documentId)
     {
         var maxVersion = await _context.DocumentVersions

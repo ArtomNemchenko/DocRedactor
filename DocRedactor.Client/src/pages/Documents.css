@@ -89,10 +89,18 @@
   min-height: 60px;
 }
 
+.document-meta {
+  margin-bottom: 15px;
+}
+
 .document-date {
   color: #999;
   font-size: 12px;
-  margin-bottom: 15px;
+  margin-bottom: 8px;
+}
+
+.document-rating {
+  margin-top: 8px;
 }
 
 .document-actions {

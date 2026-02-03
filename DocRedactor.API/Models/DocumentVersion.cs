@@ -19,6 +19,9 @@ public class DocumentVersion
     [MaxLength(500)]
     public string? ChangeDescription { get; set; }
     
+    [Range(1, 5)]
+    public int? Rating { get; set; }
+    
     [Required]
     public string UserId { get; set; } = string.Empty;
     

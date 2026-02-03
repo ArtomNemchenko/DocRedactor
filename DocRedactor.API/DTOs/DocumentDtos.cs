@@ -27,6 +27,7 @@ public class DocumentResponseDto
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public int CurrentVersion { get; set; }
+    public int? CurrentVersionRating { get; set; }
     public string UserId { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -39,8 +40,16 @@ public class DocumentVersionResponseDto
     public string Content { get; set; } = string.Empty;
     public int VersionNumber { get; set; }
     public string? ChangeDescription { get; set; }
+    public int? Rating { get; set; }
     public string UserId { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+}
+
+public class RateVersionDto
+{
+    [Required]
+    [Range(1, 5)]
+    public int Rating { get; set; }
 }
 
 public class RevertToVersionDto

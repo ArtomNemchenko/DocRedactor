@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { documentService } from '../services/api';
+import StarRating from '../components/StarRating';
 import './ViewDocument.css';
 
 function ViewDocument() {
@@ -94,6 +95,17 @@ function ViewDocument() {
       loadVersions();
     } catch (err) {
       alert('Failed to revert to version');
+      console.error(err);
+    }
+  };
+
+  const handleRateVersion = async (versionId, rating) => {
+    try {
+      await documentService.rateVersion(parseInt(id), versionId, rating);
+      // Reload versions to show updated rating
+      loadVersions();
+    } catch (err) {
+      alert('Failed to rate version');
       console.error(err);
     }
   };
@@ -197,6 +209,14 @@ function ViewDocument() {
                   <p className="version-description">
                     {version.changeDescription || 'No description'}
                   </p>
+                  <div className="version-rating-section">
+                    <label>Rate this version:</label>
+                    <StarRating
+                      rating={version.rating}
+                      onRate={(rating) => handleRateVersion(version.id, rating)}
+                      size="medium"
+                    />
+                  </div>
                   <div className="version-actions">
                     <button
                       onClick={() => handleViewVersion(version)}

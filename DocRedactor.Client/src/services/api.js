@@ -81,6 +81,11 @@ export const documentService = {
     const response = await api.post(`/documents/${id}/revert`, { versionNumber, changeDescription });
     return response.data;
   },
+
+  rateVersion: async (documentId, versionId, rating) => {
+    const response = await api.put(`/documents/${documentId}/versions/${versionId}/rate`, { rating });
+    return response.data;
+  },
 };
 
 export default api;

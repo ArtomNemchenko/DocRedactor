@@ -162,14 +162,45 @@ public class DocumentService : IDocumentService
         return MapToResponseDto(document);
     }
 
+    public async Task<DocumentVersionResponseDto?> RateVersionAsync(int documentId, int versionId, RateVersionDto rateDto, string userId)
+    {
+        // First verify user owns the document
+        var document = await _documentRepository.GetByIdAndUserIdAsync(documentId, userId);
+        if (document == null)
+        {
+            return null;
+        }
+
+        // Get the version
+        var version = await _versionRepository.GetVersionByIdAsync(versionId);
+        if (version == null || version.DocumentId != documentId)
+        {
+            return null;
+        }
+
+        // Update the rating
+        version.Rating = rateDto.Rating;
+        await _versionRepository.UpdateAsync(version);
+
+        _logger.LogInformation("Version {VersionId} of document {DocumentId} rated {Rating} by user {UserId}",
+            versionId, documentId, rateDto.Rating, userId);
+
+        return MapVersionToResponseDto(version);
+    }
+
     private static DocumentResponseDto MapToResponseDto(Document document)
     {
+        // Find the current version's rating
+        var currentVersionRating = document.Versions
+            .FirstOrDefault(v => v.VersionNumber == document.CurrentVersion)?.Rating;
+
         return new DocumentResponseDto
         {
             Id = document.Id,
             Title = document.Title,
             Content = document.Content,
             CurrentVersion = document.CurrentVersion,
+            CurrentVersionRating = currentVersionRating,
             UserId = document.UserId,
             CreatedAt = document.CreatedAt,
             UpdatedAt = document.UpdatedAt
@@ -185,6 +216,7 @@ public class DocumentService : IDocumentService
             Content = version.Content,
             VersionNumber = version.VersionNumber,
             ChangeDescription = version.ChangeDescription,
+            Rating = version.Rating,
             UserId = version.UserId,
             CreatedAt = version.CreatedAt
         };
