@@ -17,6 +17,7 @@ public class DocumentRepository : IDocumentRepository
     public async Task<IEnumerable<Document>> GetAllByUserIdAsync(string userId)
     {
         return await _context.Documents
+            .Include(d => d.Versions)
             .Where(d => d.UserId == userId)
             .OrderByDescending(d => d.UpdatedAt)
             .ToListAsync();
