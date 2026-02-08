@@ -18,6 +18,8 @@ function ViewDocument() {
   const [selectedVersion, setSelectedVersion] = useState(null);
   const [showRevertModal, setShowRevertModal] = useState(false);
   const [revertDescription, setRevertDescription] = useState('');
+  const [showCopyDropdown, setShowCopyDropdown] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   const contentEditableRef = useRef(null);
 
   useEffect(() => {
@@ -127,6 +129,34 @@ function ViewDocument() {
     }
   };
 
+  const copyWithStyling = async () => {
+    try {
+      await navigator.clipboard.writeText(document.content);
+      setCopySuccess(true);
+      setShowCopyDropdown(false);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      alert('Failed to copy content');
+      console.error(err);
+    }
+  };
+
+  const copyWithoutStyling = async () => {
+    try {
+      // Create a temporary div to extract text content
+      const tempDiv = window.document.createElement('div');
+      tempDiv.innerHTML = document.content;
+      const plainText = tempDiv.textContent || tempDiv.innerText || '';
+      await navigator.clipboard.writeText(plainText);
+      setCopySuccess(true);
+      setShowCopyDropdown(false);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      alert('Failed to copy content');
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading document...</div>;
   }
@@ -153,12 +183,44 @@ function ViewDocument() {
               Back to Documents
             </button>
             {!editMode && (
-              <button onClick={() => setEditMode(true)} className="btn-edit">
-                Edit Document
-              </button>
+              <>
+                <div className="copy-dropdown-container">
+                  <button 
+                    onClick={() => setShowCopyDropdown(!showCopyDropdown)} 
+                    className="btn-copy"
+                  >
+                    Copy Content ▼
+                  </button>
+                  {showCopyDropdown && (
+                    <div className="copy-dropdown">
+                      <button onClick={copyWithStyling} className="dropdown-item">
+                        Copy with Styling
+                      </button>
+                      <button onClick={copyWithoutStyling} className="dropdown-item">
+                        Copy without Styling
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <button 
+                  onClick={() => navigate(`/documents/${id}/split-view`)} 
+                  className="btn-split-view"
+                >
+                  Open New Document
+                </button>
+                <button onClick={() => setEditMode(true)} className="btn-edit">
+                  Edit Document
+                </button>
+              </>
             )}
           </div>
         </div>
+
+        {copySuccess && (
+          <div className="copy-success-notification">
+            ✓ Content copied to clipboard!
+          </div>
+        )}
 
         <div className="document-info">
           <p>Created: {new Date(document.createdAt).toLocaleString()}</p>

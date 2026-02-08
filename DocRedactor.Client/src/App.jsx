@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import Documents from './pages/Documents';
 import CreateDocument from './pages/CreateDocument';
 import ViewDocument from './pages/ViewDocument';
+import SplitViewDocument from './pages/SplitViewDocument';
 import './App.css';
 
 function App() {
@@ -36,6 +37,14 @@ function App() {
             element={
               <PrivateRoute>
                 <ViewDocument />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/documents/:id/split-view"
+            element={
+              <PrivateRoute>
+                <SplitViewDocument />
               </PrivateRoute>
             }
           />

@@ -30,7 +30,7 @@
   gap: 10px;
 }
 
-.btn-back, .btn-edit {
+.btn-back, .btn-edit, .btn-copy, .btn-split-view {
   padding: 10px 20px;
   color: white;
   border: none;
@@ -48,12 +48,95 @@
   background: #444;
 }
 
+.btn-copy {
+  background: #28a745;
+  position: relative;
+}
+
+.btn-copy:hover {
+  background: #218838;
+  transform: translateY(-2px);
+}
+
+.btn-split-view {
+  background: #17a2b8;
+}
+
+.btn-split-view:hover {
+  background: #138496;
+  transform: translateY(-2px);
+}
+
 .btn-edit {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .btn-edit:hover {
   transform: translateY(-2px);
+}
+
+.copy-dropdown-container {
+  position: relative;
+}
+
+.copy-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 5px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 180px;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  text-align: left;
+  background: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #333;
+  transition: background 0.2s;
+}
+
+.dropdown-item:first-child {
+  border-radius: 5px 5px 0 0;
+}
+
+.dropdown-item:last-child {
+  border-radius: 0 0 5px 5px;
+}
+
+.dropdown-item:hover {
+  background: #f0f0f0;
+}
+
+.copy-success-notification {
+  background: #28a745;
+  color: white;
+  padding: 15px;
+  border-radius: 5px;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 600;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .document-info {
