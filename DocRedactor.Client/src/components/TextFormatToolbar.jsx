@@ -34,6 +34,18 @@ function TextFormatToolbar({ onFormatApply }) {
     applyFormat('italic');
   };
 
+  const handleUnderline = () => {
+    applyFormat('underline');
+  };
+
+  const handleBulletList = () => {
+    applyFormat('insertUnorderedList');
+  };
+
+  const handleNumberedList = () => {
+    applyFormat('insertOrderedList');
+  };
+
   const handleColor = (color) => {
     applyFormat('foreColor', color);
     setShowColorPicker(false);
@@ -56,6 +68,31 @@ function TextFormatToolbar({ onFormatApply }) {
         title="Italic (Ctrl+I)"
       >
         <em>I</em>
+      </button>
+      <button
+        type="button"
+        className="format-btn"
+        onClick={handleUnderline}
+        title="Underline (Ctrl+U)"
+      >
+        <u>U</u>
+      </button>
+      <div className="toolbar-divider"></div>
+      <button
+        type="button"
+        className="format-btn list-btn"
+        onClick={handleBulletList}
+        title="Bulleted List"
+      >
+        ☰
+      </button>
+      <button
+        type="button"
+        className="format-btn list-btn"
+        onClick={handleNumberedList}
+        title="Numbered List"
+      >
+        ≡
       </button>
       <div className="color-picker-container">
         <button
