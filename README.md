@@ -18,8 +18,10 @@ The application comes pre-seeded with test users and documents:
 
 - **User Authentication**: Secure registration and login using JWT tokens
 - **Document Management**: Create, view, edit, and delete documents
+- **Rich Text Formatting**: Format text with bold, italic, and 12 color options
 - **Document Versioning**: Track all changes with full version history
 - **Version Control**: Edit documents to create new versions, view any previous version, and revert to any version (creates a new version at HEAD)
+- **Version Rating**: Rate document versions with a 5-star system
 - **Per-User Authorization**: Users can only access their own documents and versions
 - **Audit Logging**: All operations are logged for security and compliance
 - **Change Descriptions**: Add descriptions when updating or reverting documents
@@ -107,12 +109,17 @@ The frontend will start at `http://localhost:5173`
 ### 2. Create a Document
 - After logging in, click "Create New Document"
 - Enter a title and content
+- **Use the formatting toolbar** to apply bold, italic, or color to selected text:
+  - Select text and click **B** for bold
+  - Select text and click *I* for italic  
+  - Select text and click **A** to choose from 12 colors
 - Click "Create Document" - this creates version 1
 
 ### 3. Edit a Document (Create New Version)
 - Open a document
 - Click "Edit Document"
-- Modify the content as needed
+- The formatting toolbar appears above the content
+- Modify the content and apply formatting as needed
 - Add an optional change description
 - Click "Save Changes" - this creates a new version
 
