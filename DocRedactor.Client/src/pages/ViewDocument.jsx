@@ -65,6 +65,10 @@ function ViewDocument() {
         changeDescription || 'Updated content'
       );
       setDocument(updatedDoc);
+      setEditedContent(updatedDoc.content);
+      if (contentEditableRef.current) {
+        contentEditableRef.current.innerHTML = updatedDoc.content;
+      }
       setEditMode(false);
       setChangeDescription('');
       loadVersions();
@@ -99,6 +103,9 @@ function ViewDocument() {
       );
       setDocument(updatedDoc);
       setEditedContent(updatedDoc.content);
+      if (contentEditableRef.current) {
+        contentEditableRef.current.innerHTML = updatedDoc.content;
+      }
       setSelectedVersion(null);
       setShowRevertModal(false);
       setRevertDescription('');

@@ -82,10 +82,12 @@ function Documents() {
             {documents.map((doc) => (
               <div key={doc.id} className="document-card">
                 <h3>{doc.title}</h3>
-                <p className="document-preview">
-                  {doc.content.substring(0, 150)}
-                  {doc.content.length > 150 ? '...' : ''}
-                </p>
+                <div 
+                  className="document-preview"
+                  dangerouslySetInnerHTML={{ 
+                    __html: doc.content.substring(0, 150) + (doc.content.length > 150 ? '...' : '')
+                  }}
+                />
                 <div className="document-meta">
                   <p className="document-date">
                     Created: {new Date(doc.createdAt).toLocaleDateString()} | Version: {doc.currentVersion}
