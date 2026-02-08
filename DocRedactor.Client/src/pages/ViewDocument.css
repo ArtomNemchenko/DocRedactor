@@ -96,6 +96,31 @@
   font-family: 'Courier New', monospace;
 }
 
+.edit-contenteditable {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  min-height: 300px;
+  box-sizing: border-box;
+  background: white;
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+.edit-contenteditable:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+.edit-contenteditable:empty:before {
+  content: "Enter your content here...";
+  color: #999;
+  font-style: italic;
+}
+
 .edit-textarea {
   width: 100%;
   padding: 15px;

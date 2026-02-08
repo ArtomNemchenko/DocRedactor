@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { documentService } from '../services/api';
 import StarRating from '../components/StarRating';
+import TextFormatToolbar from '../components/TextFormatToolbar';
 import './ViewDocument.css';
 
 function ViewDocument() {
@@ -17,6 +18,7 @@ function ViewDocument() {
   const [selectedVersion, setSelectedVersion] = useState(null);
   const [showRevertModal, setShowRevertModal] = useState(false);
   const [revertDescription, setRevertDescription] = useState('');
+  const contentEditableRef = useRef(null);
 
   useEffect(() => {
     loadDocument();
@@ -28,6 +30,9 @@ function ViewDocument() {
       const data = await documentService.getById(id);
       setDocument(data);
       setEditedContent(data.content);
+      if (contentEditableRef.current) {
+        contentEditableRef.current.innerHTML = data.content;
+      }
     } catch (err) {
       setError('Failed to load document');
       console.error(err);
@@ -46,7 +51,9 @@ function ViewDocument() {
   };
 
   const handleUpdate = async () => {
-    if (editedContent === document.content) {
+    const currentContent = contentEditableRef.current?.innerHTML || editedContent;
+    
+    if (currentContent === document.content) {
       setEditMode(false);
       return;
     }
@@ -54,7 +61,7 @@ function ViewDocument() {
     try {
       const updatedDoc = await documentService.update(
         parseInt(id),
-        editedContent,
+        currentContent,
         changeDescription || 'Updated content'
       );
       setDocument(updatedDoc);
@@ -69,6 +76,9 @@ function ViewDocument() {
 
   const handleCancelEdit = () => {
     setEditedContent(document.content);
+    if (contentEditableRef.current) {
+      contentEditableRef.current.innerHTML = document.content;
+    }
     setChangeDescription('');
     setEditMode(false);
   };
@@ -154,11 +164,13 @@ function ViewDocument() {
           <h3>Current Content</h3>
           {editMode ? (
             <div className="edit-form">
-              <textarea
-                className="edit-textarea"
-                value={editedContent}
-                onChange={(e) => setEditedContent(e.target.value)}
-                rows={15}
+              <TextFormatToolbar />
+              <div
+                ref={contentEditableRef}
+                className="edit-contenteditable"
+                contentEditable={true}
+                suppressContentEditableWarning={true}
+                dangerouslySetInnerHTML={{ __html: editedContent }}
               />
               <div className="form-group">
                 <label htmlFor="changeDescription">Change Description</label>
@@ -181,9 +193,10 @@ function ViewDocument() {
               </div>
             </div>
           ) : (
-            <div className="document-content">
-              {document.content}
-            </div>
+            <div 
+              className="document-content"
+              dangerouslySetInnerHTML={{ __html: document.content }}
+            />
           )}
         </div>
 
@@ -239,7 +252,10 @@ function ViewDocument() {
                   {selectedVersion?.id === version.id && (
                     <div className="version-content">
                       <h4>Content at Version {version.versionNumber}:</h4>
-                      <pre className="version-text">{version.content}</pre>
+                      <div 
+                        className="version-text"
+                        dangerouslySetInnerHTML={{ __html: version.content }}
+                      />
                     </div>
                   )}
                 </div>
