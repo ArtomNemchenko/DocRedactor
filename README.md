@@ -18,7 +18,9 @@ The application comes pre-seeded with test users and documents:
 
 - **User Authentication**: Secure registration and login using JWT tokens
 - **Document Management**: Create, view, edit, and delete documents
-- **Rich Text Formatting**: Format text with bold, italic, and 12 color options
+- **Rich Text Formatting**: Format text with bold, italic, underline, colors, bulleted and numbered lists
+- **Split-View Editing**: Open new documents while viewing existing ones side-by-side
+- **Copy Content**: Copy document content with or without styling
 - **Document Versioning**: Track all changes with full version history
 - **Version Control**: Edit documents to create new versions, view any previous version, and revert to any version (creates a new version at HEAD)
 - **Version Rating**: Rate document versions with a 5-star system
